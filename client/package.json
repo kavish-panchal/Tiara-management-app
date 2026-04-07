@@ -1,0 +1,66 @@
+{
+  "name": "inventory-management-app",
+  "version": "1.0.0",
+  "main": "electron.js",
+  "homepage": "./",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "electron-build": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --win --publish never"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.x.x",
+    "zustand": "^4.x.x",
+    "axios": "^1.x.x",
+    "lucide-react": "^0.x.x"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.x.x",
+    "vite": "^5.x.x",
+    "electron": "latest",
+    "electron-is-dev": "latest",
+    "electron-builder": "latest",
+    "electron-updater": "latest",
+    "concurrently": "latest",
+    "wait-on": "latest",
+    "cross-env": "latest"
+  },
+  "build": {
+    "appId": "com.Tiara.inventory-management",
+    "productName": "Inventory Management",
+    "files": [
+      "dist/**/*",
+      "electron.js",
+      "public/**/*"
+    ],
+    "directories": {
+      "buildResources": "public",
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "kavish-panchal",
+      "repo": "Tiara-management-app"
+    }
+  }
+}
