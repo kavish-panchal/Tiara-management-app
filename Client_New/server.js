@@ -4,12 +4,15 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Resolve dist directory relative to this file, not the process working directory
+const distPath = path.resolve(__dirname, 'dist');
+
 // Serve static files from dist directory
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(distPath));
 
 // All routes serve index.html for client-side routing
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.resolve(distPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
