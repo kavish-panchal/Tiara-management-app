@@ -1,7 +1,6 @@
 const AppSettings = require("../models/AppSettings");
 const fs = require("fs").promises;
 const path = require("path");
-const { createCanvas, loadImage } = require("canvas");
 
 // @desc    Get app settings
 // @route   GET /api/settings/app
