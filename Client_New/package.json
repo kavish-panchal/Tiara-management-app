@@ -4,34 +4,36 @@
   "main": "electron.js",
   "homepage": "./",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
-    "electron-build": "npm run build && electron-builder",
-    "dist": "npm run build && electron-builder --win --publish never"
+    "electron": "node_modules/.bin/electron.cmd .",
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development node_modules/.bin/electron.cmd .\"",
+    "electron-start": "cross-env NODE_ENV=development node_modules/.bin/electron.cmd .",
+    "electron-build": "npm run build && node_modules/.bin/electron-builder.cmd",
+    "dist": "npm run build && node_modules/.bin/electron-builder.cmd --win --publish never"
   },
   "dependencies": {
+    "axios": "^1.x.x",
+    "lucide-react": "^0.x.x",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.x.x",
-    "zustand": "^4.x.x",
-    "axios": "^1.x.x",
-    "lucide-react": "^0.x.x"
+    "zustand": "^4.x.x"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.4",
     "@vitejs/plugin-react": "^4.x.x",
+    "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^41.3.0",
+    "electron-builder": "^26.8.1",
+    "electron-updater": "^6.8.3",
+    "tailwindcss": "^4.2.4",
     "vite": "^5.x.x",
-    "electron": "latest",
-    "electron-is-dev": "latest",
-    "electron-builder": "latest",
-    "electron-updater": "latest",
-    "concurrently": "latest",
-    "wait-on": "latest",
-    "cross-env": "latest"
+    "wait-on": "^9.0.5"
   },
   "build": {
     "appId": "com.Tiara.inventory-management",

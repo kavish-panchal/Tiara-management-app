@@ -1,7 +1,17 @@
+console.log("=".repeat(50));
+console.log("ELECTRON.JS FILE IS BEING EXECUTED");
+console.log("=".repeat(50));
+
 const { app, BrowserWindow, Menu } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const isDev = process.env.NODE_ENV === "development";
+
+console.log("Electron starting...");
+console.log("isDev:", isDev);
+console.log("Node ENV:", process.env.NODE_ENV);
+console.log("App path:", app.getAppPath());
+console.log("Process versions:", process.versions);
 
 let mainWindow;
 
@@ -10,6 +20,8 @@ autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
 function createWindow() {
+  console.log("Creating window...");
+
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -30,10 +42,15 @@ function createWindow() {
     ? "http://localhost:5173"
     : `file://${path.join(__dirname, "dist/index.html")}`;
 
-  mainWindow.loadURL(startUrl);
+  console.log("Loading URL:", startUrl);
+
+  mainWindow.loadURL(startUrl).catch((err) => {
+    console.error("Error loading URL:", err);
+  });
 
   // Show window when ready
   mainWindow.once("ready-to-show", () => {
+    console.log("Window ready to show");
     mainWindow.show();
   });
 
@@ -154,7 +171,7 @@ autoUpdater.on("error", (err) => {
 
 autoUpdater.on("download-progress", (progressObj) => {
   console.log(
-    `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`
+    `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`,
   );
 });
 
@@ -181,32 +198,31 @@ autoUpdater.on("update-downloaded", (info) => {
     });
 });
 
-// App lifecycle events
-app.on("ready", createWindow);
+// App lifecycle events - use whenReady() instead of on("ready")
+console.log("Setting up app lifecycle events...");
+
+app
+  .whenReady()
+  .then(() => {
+    console.log("App ready event fired via whenReady()");
+    createWindow();
+  })
+  .catch((err) => {
+    console.error("Error in whenReady:", err);
+  });
 
 app.on("window-all-closed", () => {
+  console.log("All windows closed");
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
 app.on("activate", () => {
+  console.log("App activated");
   if (mainWindow === null) {
     createWindow();
   }
 });
 
-// Prevent multiple instances
-const gotTheLock = app.requestSingleInstanceLock();
-
-if (!gotTheLock) {
-  app.quit();
-} else {
-  app.on("second-instance", () => {
-    // Someone tried to run a second instance, focus our window
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
-  });
-}
+console.log("Electron script finished loading. Waiting for app to be ready...");
