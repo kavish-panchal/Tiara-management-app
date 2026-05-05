@@ -1,7 +1,13 @@
 import axios from 'axios';
 import useAuthStore from '../stores/authStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// VITE_API_URL is a build-time variable. If it was injected during the Railway
+// build, it will be embedded in the bundle. Otherwise we fall back to the
+// backend's private internal DNS so the two services can communicate without
+// leaving Railway's private network (avoids CORS entirely for internal calls).
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  'http://tiara-management-app.railway.internal:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
