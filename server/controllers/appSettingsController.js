@@ -1,6 +1,7 @@
 const AppSettings = require("../models/AppSettings");
 const fs = require("fs").promises;
 const path = require("path");
+const { getFile, fileExists } = require("../config/s3");
 
 // @desc    Get app settings
 // @route   GET /api/settings/app
@@ -54,54 +55,94 @@ const getSkuImage = async (req, res) => {
     const { skuCode } = req.params;
     const { partyName, size, sets } = req.query; // Get overlay data from query params
 
-    // Get the configured image folder path
-    const settings = await AppSettings.findOne();
+    // Check if using S3 or local storage
+    const useS3 =
+      process.env.AWS_S3_BUCKET_NAME && process.env.AWS_ACCESS_KEY_ID;
 
-    if (!settings || !settings.skuImageFolderPath) {
-      return res.status(404).json({
-        message: "Image folder path not configured. Please set it in Settings.",
-      });
-    }
+    if (useS3) {
+      // S3 MODE: Try to find image in S3
+      const extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
-    const folderPath = settings.skuImageFolderPath;
+      let imageBuffer = null;
+      let foundExtension = null;
 
-    // Common image extensions to check
-    const extensions = [
-      ".jpg",
-      ".jpeg",
-      ".png",
-      ".gif",
-      ".webp",
-      ".JPG",
-      ".JPEG",
-      ".PNG",
-      ".GIF",
-      ".WEBP",
-    ];
-
-    // Try to find the image with any of the extensions
-    let imagePath = null;
-    for (const ext of extensions) {
-      const testPath = path.join(folderPath, `${skuCode}${ext}`);
-      try {
-        await fs.access(testPath);
-        imagePath = testPath;
-        break;
-      } catch (err) {
-        // File doesn't exist with this extension, try next
-        continue;
+      // Try each extension in S3
+      for (const ext of extensions) {
+        const s3Key = `sku-images/${skuCode}${ext}`;
+        try {
+          const exists = await fileExists(s3Key);
+          if (exists) {
+            imageBuffer = await getFile(s3Key);
+            foundExtension = ext;
+            break;
+          }
+        } catch (err) {
+          continue;
+        }
       }
-    }
 
-    if (!imagePath) {
-      return res.status(404).json({
-        message: `Image not found for SKU: ${skuCode}`,
-      });
-    }
+      if (!imageBuffer) {
+        return res.status(404).json({
+          message: `Image not found for SKU: ${skuCode}`,
+        });
+      }
 
-    // If no overlay data provided, send the image as is
-    if (!partyName && !size && !sets) {
-      return res.sendFile(imagePath);
+      // Send the image directly
+      const contentType =
+        foundExtension === ".png" ? "image/png" : "image/jpeg";
+      res.set("Content-Type", contentType);
+      return res.send(imageBuffer);
+    } else {
+      // LOCAL MODE: Use local file system
+      const settings = await AppSettings.findOne();
+
+      if (!settings || !settings.skuImageFolderPath) {
+        return res.status(404).json({
+          message:
+            "Image folder path not configured. Please set it in Settings.",
+        });
+      }
+
+      const folderPath = settings.skuImageFolderPath;
+
+      // Common image extensions to check
+      const extensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".JPG",
+        ".JPEG",
+        ".PNG",
+        ".GIF",
+        ".WEBP",
+      ];
+
+      // Try to find the image with any of the extensions
+      let imagePath = null;
+      for (const ext of extensions) {
+        const testPath = path.join(folderPath, `${skuCode}${ext}`);
+        try {
+          await fs.access(testPath);
+          imagePath = testPath;
+          break;
+        } catch (err) {
+          // File doesn't exist with this extension, try next
+          continue;
+        }
+      }
+
+      if (!imagePath) {
+        return res.status(404).json({
+          message: `Image not found for SKU: ${skuCode}`,
+        });
+      }
+
+      // If no overlay data provided, send the image as is
+      if (!partyName && !size && !sets) {
+        return res.sendFile(imagePath);
+      }
     }
 
     // Load the image and add text overlays
