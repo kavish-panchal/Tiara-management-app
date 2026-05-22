@@ -96,15 +96,49 @@ const updateUser = async (req, res) => {
     await user.save();
 
     // Create audit log
-    await createAuditLog({
-      user: req.user,
-      action: "UPDATE",
-      resourceType: "User",
-      resourceId: user._id.toString(),
-      description: `Updated user: ${user.name} (${user.email})`,
-      changes,
-      req,
-    });
+    if (Object.keys(changes).length > 0) {
+      // Build detailed description
+      const changeDescriptions = [];
+      if (changes.name) {
+        changeDescriptions.push(
+          `name: "${changes.name.old}" → "${changes.name.new}"`,
+        );
+      }
+      if (changes.email) {
+        changeDescriptions.push(
+          `email: "${changes.email.old}" → "${changes.email.new}"`,
+        );
+      }
+      if (changes.role) {
+        changeDescriptions.push(
+          `role: ${changes.role.old} → ${changes.role.new}`,
+        );
+      }
+      if (changes.active !== undefined) {
+        changeDescriptions.push(
+          `status: ${changes.active.old ? "active" : "inactive"} → ${changes.active.new ? "active" : "inactive"}`,
+        );
+      }
+      if (changes.password) {
+        changeDescriptions.push("password changed");
+      }
+
+      const detailStr =
+        changeDescriptions.length > 0
+          ? ` (${changeDescriptions.join(", ")})`
+          : "";
+      const description = `Updated user: ${user.name} (@${user.username})${detailStr}`;
+
+      await createAuditLog({
+        user: req.user,
+        action: "UPDATE",
+        resourceType: "User",
+        resourceId: user._id.toString(),
+        description,
+        changes,
+        req,
+      });
+    }
 
     res.json(user);
   } catch (error) {

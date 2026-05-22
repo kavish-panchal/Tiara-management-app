@@ -136,13 +136,41 @@ const updateOrder = async (req, res) => {
 
     // Create audit log
     if (req.user && Object.keys(changes).length > 0) {
+      // Build detailed description
+      const changeDescriptions = [];
+      if (changes.partyName) {
+        changeDescriptions.push(
+          `party name from "${changes.partyName.old}" to "${changes.partyName.new}"`,
+        );
+      }
+      if (changes.orderDate) {
+        changeDescriptions.push(
+          `order date from ${new Date(changes.orderDate.old).toLocaleDateString()} to ${new Date(changes.orderDate.new).toLocaleDateString()}`,
+        );
+      }
+      if (changes.dueDate) {
+        changeDescriptions.push(
+          `due date from ${new Date(changes.dueDate.old).toLocaleDateString()} to ${new Date(changes.dueDate.new).toLocaleDateString()}`,
+        );
+      }
+      if (changes.status) {
+        changeDescriptions.push(
+          `status from "${changes.status.old}" to "${changes.status.new}"`,
+        );
+      }
+
+      const description =
+        changeDescriptions.length > 0
+          ? `Updated ${changeDescriptions.join(", ")} for order #${order.orderNumber} (${order.partyName})`
+          : `Updated order #${order.orderNumber} for ${order.partyName}`;
+
       await createAuditLog({
         user: req.user,
         action:
           status && status !== changes.status?.old ? "STATUS_CHANGE" : "UPDATE",
         resourceType: "Order",
         resourceId: order._id.toString(),
-        description: `Updated order #${order.orderNumber} for ${order.partyName}`,
+        description,
         changes,
         req,
       });
@@ -295,12 +323,43 @@ const updateProductionStage = async (req, res) => {
 
     // Create audit log
     if (req.user && Object.keys(changes).length > 0) {
+      // Build detailed description
+      const changeDescriptions = [];
+      if (changes.status) {
+        changeDescriptions.push(
+          `status: ${changes.status.old} → ${changes.status.new}`,
+        );
+      }
+      if (changes.labour) {
+        const oldLabour = changes.labour.old || "unassigned";
+        const newLabour = changes.labour.new || "unassigned";
+        changeDescriptions.push(`worker: ${oldLabour} → ${newLabour}`);
+      }
+      if (changes.startDate) {
+        const dateStr = changes.startDate.new
+          ? new Date(changes.startDate.new).toLocaleDateString()
+          : "not set";
+        changeDescriptions.push(`start date: ${dateStr}`);
+      }
+      if (changes.finishDate) {
+        const dateStr = changes.finishDate.new
+          ? new Date(changes.finishDate.new).toLocaleDateString()
+          : "not set";
+        changeDescriptions.push(`finish date: ${dateStr}`);
+      }
+
+      const detailStr =
+        changeDescriptions.length > 0
+          ? ` (${changeDescriptions.join(", ")})`
+          : "";
+      const description = `Updated "${stageName}" stage for SKU ${design.skuCode} in order #${order.orderNumber} (${order.partyName})${detailStr}`;
+
       await createAuditLog({
         user: req.user,
         action: "PRODUCTION_UPDATE",
         resourceType: "ProductionStage",
         resourceId: order._id.toString(),
-        description: `Updated ${stageName} stage for SKU ${design.skuCode} in order #${order.orderNumber}`,
+        description,
         changes,
         req,
       });
