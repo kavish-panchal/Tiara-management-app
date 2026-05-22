@@ -72,22 +72,17 @@ const OrderImagePreviewModal = ({
     // Draw the image
     ctx.drawImage(image, 0, 0);
 
-    // Text styling
-    const fontSize = Math.max(image.height * 0.025, 16);
+    // Text styling - increased by 6px
+    const fontSize = Math.max(image.height * 0.025, 16) + 6;
     ctx.font = `bold ${fontSize}px Arial`;
 
     const padding = 15;
     const lineHeight = fontSize * 1.3;
 
-    // Helper function to draw text with outline
+    // Helper function to draw text (black color)
     const drawTextWithOutline = (text, x, y) => {
-      // Black outline
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 4;
-      ctx.strokeText(text, x, y);
-
-      // White text
-      ctx.fillStyle = "#FFFFFF";
+      // Black text
+      ctx.fillStyle = "#000000";
       ctx.fillText(text, x, y);
     };
 
@@ -211,7 +206,7 @@ const OrderImagePreviewModal = ({
             <strong>Left:</strong> Party Name and Size/Sets (vertical) |{" "}
             <strong>Right:</strong> Design # and Date (vertical)
             <br />
-            All text is rotated vertically. Images are formatted for 4x6 inch
+            Text is displayed in black. Images are formatted for 4x6 inch
             printing.
           </p>
 
