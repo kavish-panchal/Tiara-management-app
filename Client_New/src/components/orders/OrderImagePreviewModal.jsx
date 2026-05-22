@@ -89,34 +89,19 @@ const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
 
-    // Group designs into pairs (2 per page)
-    const designPairs = [];
-    for (let i = 0; i < designs.length; i += 2) {
-      designPairs.push(designs.slice(i, i + 2));
-    }
+    // One image per page, formatted for 4x6 inch
+    const printContent = designs
+      .map((design, index) => {
+        const canvas = canvasRefs.current[design.skuCode];
+        if (!canvas) return "";
 
-    const printContent = designPairs
-      .map((pair, pageIndex) => {
-        const imagesHtml = pair
-          .map((design) => {
-            const canvas = canvasRefs.current[design.skuCode];
-            if (!canvas) return "";
-
-            const imageData = canvas.toDataURL("image/png");
-            return `
-              <div style="flex: 1; text-align: center; padding: 5px; max-width: 50%;">
-                <h3 style="margin-bottom: 5px; font-size: 14px; font-weight: bold;">SKU: ${design.skuCode}</h3>
-                <img src="${imageData}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />
-              </div>
-            `;
-          })
-          .join("");
-
+        const imageData = canvas.toDataURL("image/png");
         const pageBreak =
-          pageIndex < designPairs.length - 1 ? "page-break-after: always;" : "";
+          index < designs.length - 1 ? "page-break-after: always;" : "";
+
         return `
-          <div style="${pageBreak} display: flex; gap: 10px; padding: 10px; align-items: flex-start; justify-content: center;">
-            ${imagesHtml}
+          <div style="${pageBreak} width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+            <img src="${imageData}" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         `;
       })
@@ -125,7 +110,7 @@ const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Order SKU Images</title>
+          <title>Order SKU Images - 4x6</title>
           <style>
             * {
               margin: 0;
@@ -137,8 +122,8 @@ const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
             }
             @media print {
               @page {
-                size: A4;
-                margin: 0.5cm;
+                size: 4in 6in;
+                margin: 0;
               }
               body {
                 -webkit-print-color-adjust: exact;
