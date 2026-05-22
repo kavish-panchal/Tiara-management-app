@@ -6,6 +6,7 @@ const OrderImagePreviewModal = ({
   onClose,
   designs,
   partyName,
+  orderNumber,
   onConfirm,
 }) => {
   const [loadedImages, setLoadedImages] = useState({});
@@ -91,7 +92,11 @@ const OrderImagePreviewModal = ({
     ctx.textBaseline = "top";
 
     const currentDate = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
-    const leftLines = [`#${designNumber}`, orderNumber || "", currentDate];
+    const leftLines = [
+      `#${designNumber}`,
+      ...(orderNumber ? [orderNumber] : []), // Only include if orderNumber exists
+      currentDate,
+    ];
 
     const leftStartY = (image.height - leftLines.length * lineHeight) / 2;
     leftLines.forEach((line, index) => {
@@ -203,8 +208,9 @@ const OrderImagePreviewModal = ({
           <p className="text-slate-400 mb-6">
             Review the images below. Each image includes:
             <br />
-            <strong>Left:</strong> Design #, Order #, and Date (vertical) |{" "}
-            <strong>Right:</strong> Party Name and Size/Sets (vertical)
+            <strong>Left:</strong> Design #{orderNumber ? ", Order #," : ""} and
+            Date (vertical) | <strong>Right:</strong> Party Name and Size/Sets
+            (vertical)
             <br />
             Text is displayed in black. Images are formatted for 4x6 inch
             printing.
