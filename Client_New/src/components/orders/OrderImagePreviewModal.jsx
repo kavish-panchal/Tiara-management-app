@@ -73,21 +73,14 @@ const OrderImagePreviewModal = ({
     ctx.drawImage(image, 0, 0);
 
     // Text styling
-    const fontSize = Math.max(image.height * 0.03, 18);
+    const fontSize = Math.max(image.height * 0.025, 16);
     ctx.font = `bold ${fontSize}px Arial`;
 
     const padding = 15;
+    const lineHeight = fontSize * 1.3;
 
     // Helper function to draw text with outline
-    const drawTextWithOutline = (text, x, y, rotation = 0) => {
-      ctx.save();
-      if (rotation !== 0) {
-        ctx.translate(x, y);
-        ctx.rotate(rotation);
-        x = 0;
-        y = 0;
-      }
-
+    const drawTextWithOutline = (text, x, y) => {
       // Black outline
       ctx.strokeStyle = "#000000";
       ctx.lineWidth = 4;
@@ -96,34 +89,38 @@ const OrderImagePreviewModal = ({
       // White text
       ctx.fillStyle = "#FFFFFF";
       ctx.fillText(text, x, y);
-
-      ctx.restore();
     };
 
-    // LEFT SIDE - Vertical text (Party Name and Size breakdown)
-    const sizeText = design.sizeBreakdown
-      .map((sb) => `Size ${sb.size}: ${sb.sets} Sets`)
-      .join(" | ");
-    const leftText = `${partyName || "Party Name"} | ${sizeText}`;
+    // LEFT SIDE - Stacked vertical lines (Party Name + Size breakdown)
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    drawTextWithOutline(
-      leftText,
-      padding + fontSize / 2,
-      image.height / 2,
-      -Math.PI / 2, // Rotate 90 degrees counter-clockwise
-    );
+    const leftLines = [
+      partyName || "Party Name",
+      "", // Empty line for spacing
+      ...design.sizeBreakdown.map((sb) => `${sb.size}: ${sb.sets}`),
+    ];
 
-    // RIGHT SIDE - Vertical text (Design # and Date)
+    const leftStartY = (image.height - leftLines.length * lineHeight) / 2;
+    leftLines.forEach((line, index) => {
+      drawTextWithOutline(line, padding, leftStartY + index * lineHeight);
+    });
+
+    // RIGHT SIDE - Stacked vertical lines (Design # and Date)
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+
     const currentDate = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
-    const rightText = `#${designNumber} | ${currentDate}`;
-    drawTextWithOutline(
-      rightText,
-      image.width - padding - fontSize / 2,
-      image.height / 2,
-      Math.PI / 2, // Rotate 90 degrees clockwise
-    );
+    const rightLines = [`#${designNumber}`, currentDate];
+
+    const rightStartY = (image.height - rightLines.length * lineHeight) / 2;
+    rightLines.forEach((line, index) => {
+      drawTextWithOutline(
+        line,
+        image.width - padding,
+        rightStartY + index * lineHeight,
+      );
+    });
   };
 
   const handlePrint = () => {
