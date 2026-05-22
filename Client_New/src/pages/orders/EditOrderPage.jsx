@@ -36,10 +36,17 @@ const EditOrderPage = () => {
         partyName: fetchedOrder.partyName,
         orderDate: new Date(fetchedOrder.orderDate).toISOString().split("T")[0],
         dueDate: new Date(fetchedOrder.dueDate).toISOString().split("T")[0],
+        orderCompleted: fetchedOrder.orderCompleted
+          ? new Date(fetchedOrder.orderCompleted).toISOString().split("T")[0]
+          : "",
+        orderDelivered: fetchedOrder.orderDelivered
+          ? new Date(fetchedOrder.orderDelivered).toISOString().split("T")[0]
+          : "",
         specialNotes: fetchedOrder.specialNotes || "",
         status: fetchedOrder.status,
         designs: fetchedOrder.designs.map((design) => ({
           skuCode: design.skuCode,
+          specialRemarks: design.specialRemarks || "",
           sizeBreakdown: design.sizeBreakdown.map((sb) => ({
             size: sb.size,
             sets: sb.sets,
@@ -213,6 +220,32 @@ const EditOrderPage = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
+                Order Completed
+              </label>
+              <input
+                type="date"
+                value={formData.orderCompleted || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, orderCompleted: e.target.value })
+                }
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Order Delivered
+              </label>
+              <input
+                type="date"
+                value={formData.orderDelivered || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, orderDelivered: e.target.value })
+                }
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Status *
               </label>
               <select
@@ -349,6 +382,26 @@ const EditOrderPage = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Special Remarks */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Special Remarks (Optional)
+                    </label>
+                    <textarea
+                      value={design.specialRemarks || ""}
+                      onChange={(e) =>
+                        updateDesign(
+                          designIndex,
+                          "specialRemarks",
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Enter any special remarks for this design..."
+                      rows="2"
+                      className="w-full px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
                 </div>
               ))}

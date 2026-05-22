@@ -50,6 +50,10 @@ const designSchema = new mongoose.Schema(
     },
     sizeBreakdown: [sizeBreakdownSchema],
     productionProgress: [productionProgressSchema],
+    specialRemarks: {
+      type: String,
+      default: "",
+    },
   },
   { _id: true },
 );
@@ -72,6 +76,14 @@ const orderSchema = new mongoose.Schema(
     dueDate: {
       type: Date,
       required: true,
+    },
+    orderCompleted: {
+      type: Date,
+      default: null,
+    },
+    orderDelivered: {
+      type: Date,
+      default: null,
     },
     specialNotes: {
       type: String,

@@ -15,6 +15,8 @@ const CreateOrderPage = () => {
     partyName: "",
     orderDate: new Date().toISOString().split("T")[0],
     dueDate: "",
+    orderCompleted: "",
+    orderDelivered: "",
     specialNotes: "",
     designs: [],
   });
@@ -27,6 +29,7 @@ const CreateOrderPage = () => {
         {
           skuCode: "",
           sizeBreakdown: [{ size: "", sets: "" }],
+          specialRemarks: "",
         },
       ],
     });
@@ -171,6 +174,32 @@ const CreateOrderPage = () => {
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Order Completed
+              </label>
+              <input
+                type="date"
+                value={formData.orderCompleted || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, orderCompleted: e.target.value })
+                }
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Order Delivered
+              </label>
+              <input
+                type="date"
+                value={formData.orderDelivered || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, orderDelivered: e.target.value })
+                }
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 Special Notes
@@ -298,6 +327,26 @@ const CreateOrderPage = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Special Remarks */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Special Remarks (Optional)
+                    </label>
+                    <textarea
+                      value={design.specialRemarks || ""}
+                      onChange={(e) =>
+                        updateDesign(
+                          designIndex,
+                          "specialRemarks",
+                          e.target.value,
+                        )
+                      }
+                      placeholder="Enter any special remarks for this design..."
+                      rows="2"
+                      className="w-full px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
                 </div>
               ))}

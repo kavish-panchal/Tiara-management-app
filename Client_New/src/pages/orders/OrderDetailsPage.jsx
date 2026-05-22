@@ -345,7 +345,7 @@ const OrderDetailsPage = () => {
       </div>
 
       {/* Order Info */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div className="bg-slate-800 rounded-lg p-6">
           <p className="text-slate-400 text-sm mb-1">Order Date</p>
           <p className="text-white font-semibold">
@@ -356,6 +356,18 @@ const OrderDetailsPage = () => {
           <p className="text-slate-400 text-sm mb-1">Due Date</p>
           <p className="text-white font-semibold">
             {formatDate(order.dueDate)}
+          </p>
+        </div>
+        <div className="bg-slate-800 rounded-lg p-6">
+          <p className="text-slate-400 text-sm mb-1">Order Completed</p>
+          <p className="text-white font-semibold">
+            {order.orderCompleted ? formatDate(order.orderCompleted) : "-"}
+          </p>
+        </div>
+        <div className="bg-slate-800 rounded-lg p-6">
+          <p className="text-slate-400 text-sm mb-1">Order Delivered</p>
+          <p className="text-white font-semibold">
+            {order.orderDelivered ? formatDate(order.orderDelivered) : "-"}
           </p>
         </div>
         <div className="bg-slate-800 rounded-lg p-6">
@@ -431,6 +443,18 @@ const OrderDetailsPage = () => {
                           </span>
                         ))}
                       </div>
+
+                      {/* Special Remarks */}
+                      {design.specialRemarks && (
+                        <div className="mt-3 bg-slate-700/50 rounded-lg p-3 border-l-4 border-blue-500">
+                          <p className="text-xs font-semibold text-blue-400 mb-1">
+                            Special Remarks:
+                          </p>
+                          <p className="text-sm text-slate-300">
+                            {design.specialRemarks}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
