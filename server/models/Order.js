@@ -57,7 +57,7 @@ const designSchema = new mongoose.Schema(
 const orderSchema = new mongoose.Schema(
   {
     orderNumber: {
-      type: Number,
+      type: String,
       unique: true,
     },
     partyName: {
@@ -79,8 +79,16 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "in-production", "completed", "delivered"],
+      enum: ["pending", "in-production", "completed", "cancelled"],
       default: "pending",
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+    cancellationReason: {
+      type: String,
+      default: "",
     },
     designs: [designSchema],
   },
@@ -89,16 +97,28 @@ const orderSchema = new mongoose.Schema(
   },
 );
 
-// Auto-increment orderNumber before saving
+// Auto-increment orderNumber before saving (format: YY0001)
 orderSchema.pre("save", async function () {
   if (this.isNew && !this.orderNumber) {
+    const currentYear = new Date().getFullYear();
+    const yearPrefix = currentYear.toString().slice(-2); // Get last 2 digits (e.g., "26" for 2026)
+
+    // Find the last order for the current year
+    const yearPattern = new RegExp(`^${yearPrefix}`);
     const lastOrder = await this.constructor
-      .findOne({}, { orderNumber: 1 })
+      .findOne({ orderNumber: yearPattern })
       .sort({ orderNumber: -1 })
       .limit(1);
 
-    this.orderNumber =
-      lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1;
+    let sequenceNumber = 1;
+    if (lastOrder && lastOrder.orderNumber) {
+      // Extract the sequence number from the last order (e.g., "260005" -> 5)
+      const lastSequence = parseInt(lastOrder.orderNumber.slice(2), 10);
+      sequenceNumber = lastSequence + 1;
+    }
+
+    // Format: YY + 4-digit sequence (e.g., "260001", "260002")
+    this.orderNumber = `${yearPrefix}${sequenceNumber.toString().padStart(4, "0")}`;
   }
 });
 
@@ -106,7 +126,7 @@ orderSchema.pre("save", async function () {
 orderSchema.virtual("isOverdue").get(function () {
   return (
     this.status !== "completed" &&
-    this.status !== "delivered" &&
+    this.status !== "cancelled" &&
     new Date() > this.dueDate
   );
 });

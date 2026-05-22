@@ -41,7 +41,7 @@ const getDueToday = async (req, res) => {
         $gte: today,
         $lt: tomorrow,
       },
-      status: { $nin: ["completed", "delivered"] },
+      status: { $nin: ["completed", "cancelled"] },
     }).sort({ dueDate: 1 });
 
     res.json(orders);
@@ -60,7 +60,7 @@ const getOverdue = async (req, res) => {
 
     const orders = await Order.find({
       dueDate: { $lt: today },
-      status: { $nin: ["completed", "delivered"] },
+      status: { $nin: ["completed", "cancelled"] },
     }).sort({ dueDate: 1 });
 
     res.json(orders);
@@ -76,6 +76,20 @@ const getCompletedOrders = async (req, res) => {
   try {
     const orders = await Order.find({ status: "completed" }).sort({
       dueDate: -1,
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get cancelled orders
+// @route   GET /api/reports/cancelled-orders
+// @access  Private
+const getCancelledOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ status: "cancelled" }).sort({
+      cancelledAt: -1,
     });
     res.json(orders);
   } catch (error) {
@@ -203,6 +217,7 @@ module.exports = {
   getPendingOrders,
   getActiveOrders,
   getCompletedOrders,
+  getCancelledOrders,
   getDueToday,
   getOverdue,
   getWorkerReport,

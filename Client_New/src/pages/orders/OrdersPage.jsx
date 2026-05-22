@@ -81,6 +81,7 @@ const OrdersPage = () => {
       pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500",
       "in-production": "bg-blue-500/10 text-blue-500 border-blue-500",
       completed: "bg-green-500/10 text-green-500 border-green-500",
+      cancelled: "bg-red-500/10 text-red-500 border-red-500",
     };
     return colors[status] || colors.pending;
   };
@@ -171,6 +172,7 @@ const OrdersPage = () => {
             <option value="pending">Pending</option>
             <option value="in-production">In Production</option>
             <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
       </div>

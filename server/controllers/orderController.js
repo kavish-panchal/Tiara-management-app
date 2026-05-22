@@ -312,11 +312,62 @@ const updateProductionStage = async (req, res) => {
   }
 };
 
+// @desc    Cancel order
+// @route   PUT /api/orders/:id/cancel
+// @access  Private
+const cancelOrder = async (req, res) => {
+  try {
+    const { cancellationReason } = req.body;
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Check if already cancelled
+    if (order.status === "cancelled") {
+      return res.status(400).json({ message: "Order is already cancelled" });
+    }
+
+    const oldStatus = order.status;
+
+    // Update order to cancelled
+    order.status = "cancelled";
+    order.cancelledAt = new Date();
+    order.cancellationReason = cancellationReason || "";
+
+    await order.save();
+
+    // Create audit log
+    if (req.user) {
+      await createAuditLog({
+        user: req.user,
+        action: "CANCEL",
+        resourceType: "Order",
+        resourceId: order._id.toString(),
+        description: `Cancelled order #${order.orderNumber} for ${order.partyName}`,
+        changes: {
+          status: { old: oldStatus, new: "cancelled" },
+          cancelledAt: { old: null, new: order.cancelledAt },
+          cancellationReason: { old: "", new: cancellationReason || "" },
+        },
+        req,
+      });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getOrders,
   getOrderById,
   createOrder,
   updateOrder,
   deleteOrder,
+  cancelOrder,
   updateProductionStage,
 };

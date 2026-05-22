@@ -6,6 +6,7 @@ const {
   createOrder,
   updateOrder,
   deleteOrder,
+  cancelOrder,
   updateProductionStage,
 } = require("../controllers/orderController");
 const { protect } = require("../middleware/auth");
@@ -17,6 +18,9 @@ router.use(protect);
 router.route("/").get(getOrders).post(createOrder);
 
 router.route("/:id").get(getOrderById).put(updateOrder).delete(deleteOrder);
+
+// Cancel order route
+router.put("/:id/cancel", cancelOrder);
 
 // Production stage update route
 router.put(

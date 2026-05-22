@@ -4,6 +4,7 @@ const {
   getPendingOrders,
   getActiveOrders,
   getCompletedOrders,
+  getCancelledOrders,
   getDueToday,
   getOverdue,
   getWorkerReport,
@@ -13,6 +14,7 @@ const {
 router.get("/pending-orders", getPendingOrders);
 router.get("/active-orders", getActiveOrders);
 router.get("/completed-orders", getCompletedOrders);
+router.get("/cancelled-orders", getCancelledOrders);
 router.get("/due-today", getDueToday);
 router.get("/overdue", getOverdue);
 router.get("/worker-report", getWorkerReport);

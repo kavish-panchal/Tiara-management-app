@@ -8,6 +8,7 @@ const ReportsPage = () => {
   const [pendingOrders, setPendingOrders] = useState([]);
   const [activeOrders, setActiveOrders] = useState([]);
   const [completedOrders, setCompletedOrders] = useState([]);
+  const [cancelledOrders, setCancelledOrders] = useState([]);
   const [dueToday, setDueToday] = useState([]);
   const [overdue, setOverdue] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,17 +29,25 @@ const ReportsPage = () => {
 
   const fetchReports = async () => {
     try {
-      const [pendingRes, activeRes, completedRes, dueTodayRes, overdueRes] =
-        await Promise.all([
-          api.get("/reports/pending-orders"),
-          api.get("/reports/active-orders"),
-          api.get("/reports/completed-orders"),
-          api.get("/reports/due-today"),
-          api.get("/reports/overdue"),
-        ]);
+      const [
+        pendingRes,
+        activeRes,
+        completedRes,
+        cancelledRes,
+        dueTodayRes,
+        overdueRes,
+      ] = await Promise.all([
+        api.get("/reports/pending-orders"),
+        api.get("/reports/active-orders"),
+        api.get("/reports/completed-orders"),
+        api.get("/reports/cancelled-orders"),
+        api.get("/reports/due-today"),
+        api.get("/reports/overdue"),
+      ]);
       setPendingOrders(pendingRes.data);
       setActiveOrders(activeRes.data);
       setCompletedOrders(completedRes.data);
+      setCancelledOrders(cancelledRes.data);
       setDueToday(dueTodayRes.data);
       setOverdue(overdueRes.data);
     } catch (error) {
@@ -61,6 +70,7 @@ const ReportsPage = () => {
       pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500",
       "in-production": "bg-blue-500/10 text-blue-500 border-blue-500",
       completed: "bg-green-500/10 text-green-500 border-green-500",
+      cancelled: "bg-red-500/10 text-red-500 border-red-500",
     };
     return colors[status] || colors.pending;
   };
@@ -108,6 +118,12 @@ const ReportsPage = () => {
       icon: CheckCircle,
     },
     {
+      id: "cancelled",
+      label: "Cancelled Orders",
+      count: cancelledOrders.length,
+      icon: AlertCircle,
+    },
+    {
       id: "due-today",
       label: "Due Today",
       count: dueToday.length,
@@ -135,6 +151,8 @@ const ReportsPage = () => {
         return activeOrders;
       case "completed":
         return completedOrders;
+      case "cancelled":
+        return cancelledOrders;
       case "due-today":
         return dueToday;
       case "overdue":

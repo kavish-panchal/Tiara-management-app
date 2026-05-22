@@ -1,4 +1,11 @@
-import { ArrowLeft, ChevronDown, ChevronUp, Edit2, Trash2 } from "lucide-react";
+import {
+    ArrowLeft,
+    ChevronDown,
+    ChevronUp,
+    Edit2,
+    Trash2,
+    X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
@@ -15,6 +22,8 @@ const OrderDetailsPage = () => {
   const [error, setError] = useState("");
   const [collapsedDesigns, setCollapsedDesigns] = useState({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -214,6 +223,23 @@ const OrderDetailsPage = () => {
     }
   };
 
+  const handleCancelClick = () => {
+    setShowCancelDialog(true);
+    setCancellationReason("");
+  };
+
+  const handleCancelConfirm = async () => {
+    try {
+      await api.put(`/orders/${id}/cancel`, { cancellationReason });
+      setShowCancelDialog(false);
+      // Refresh order data
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to cancel order");
+      console.error(err);
+    }
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500",
@@ -268,21 +294,45 @@ const OrderDetailsPage = () => {
         </button>
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Order #{order.orderNumber}
-            </h1>
+            <div className="flex items-center space-x-3 mb-2">
+              <h1 className="text-3xl font-bold text-white">
+                Order #{order.orderNumber}
+              </h1>
+              {order.status === "cancelled" && (
+                <span className="px-3 py-1 bg-red-600/20 border border-red-600 text-red-400 text-sm font-bold rounded-full">
+                  🚫 CANCELLED
+                </span>
+              )}
+            </div>
             <p className="text-xl font-semibold text-slate-300">
               Party Name: {order.partyName}
             </p>
+            {order.status === "cancelled" && order.cancelledAt && (
+              <p className="text-sm text-slate-400 mt-1">
+                Cancelled on {new Date(order.cancelledAt).toLocaleDateString()}
+                {order.cancellationReason && ` - ${order.cancellationReason}`}
+              </p>
+            )}
           </div>
           <div className="flex space-x-2">
-            <button
-              onClick={() => navigate(`/orders/${id}/edit`)}
-              className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Edit2 size={18} />
-              <span>Edit</span>
-            </button>
+            {order.status !== "cancelled" && (
+              <>
+                <button
+                  onClick={() => navigate(`/orders/${id}/edit`)}
+                  className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+                >
+                  <Edit2 size={18} />
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={handleCancelClick}
+                  className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+                >
+                  <X size={18} />
+                  <span>Cancel Order</span>
+                </button>
+              </>
+            )}
             <button
               onClick={handleDeleteClick}
               className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
@@ -405,12 +455,20 @@ const OrderDetailsPage = () => {
               {!isCollapsed && (
                 <div className="px-6 pb-6 border-t border-slate-700">
                   <div className="pt-6">
-                    <ProductionTracker
-                      orderId={order._id}
-                      designId={design._id}
-                      productionProgress={design.productionProgress || []}
-                      onUpdate={() => fetchData(true)}
-                    />
+                    {order.status === "cancelled" ? (
+                      <div className="bg-slate-700 rounded-lg p-6 text-center">
+                        <p className="text-slate-400">
+                          Production updates are disabled for cancelled orders.
+                        </p>
+                      </div>
+                    ) : (
+                      <ProductionTracker
+                        orderId={order._id}
+                        designId={design._id}
+                        productionProgress={design.productionProgress || []}
+                        onUpdate={() => fetchData(true)}
+                      />
+                    )}
                   </div>
                 </div>
               )}
@@ -430,6 +488,49 @@ const OrderDetailsPage = () => {
         cancelText="Cancel"
         variant="danger"
       />
+
+      {/* Cancel Order Dialog */}
+      {showCancelDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-white mb-4">Cancel Order</h2>
+            <p className="text-slate-400 mb-4">
+              Are you sure you want to cancel order #{order?.orderNumber} for{" "}
+              {order?.partyName}?
+            </p>
+            <p className="text-slate-400 mb-4 text-sm">
+              The order will remain in the system for records but will be marked
+              as cancelled.
+            </p>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Reason for cancellation (optional)
+              </label>
+              <textarea
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                placeholder="Enter reason..."
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                rows="3"
+              />
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowCancelDialog(false)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={handleCancelConfirm}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+              >
+                Confirm Cancellation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
