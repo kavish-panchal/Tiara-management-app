@@ -72,8 +72,8 @@ const OrderImagePreviewModal = ({
     // Draw the image
     ctx.drawImage(image, 0, 0);
 
-    // Text styling - increased by 6px
-    const fontSize = Math.max(image.height * 0.025, 16) + 6;
+    // Text styling - doubled from original size (16px base -> 32px base, then + 6px = 38px, doubled = 76px)
+    const fontSize = (Math.max(image.height * 0.025, 16) + 6) * 2;
     ctx.font = `bold ${fontSize}px Arial`;
 
     const padding = 15;
@@ -93,7 +93,7 @@ const OrderImagePreviewModal = ({
     const leftLines = [
       partyName || "Party Name",
       "", // Empty line for spacing
-      ...design.sizeBreakdown.map((sb) => `${sb.size}: ${sb.sets}`),
+      ...design.sizeBreakdown.map((sb) => `${sb.size} | ${sb.sets}`),
     ];
 
     const leftStartY = (image.height - leftLines.length * lineHeight) / 2;
