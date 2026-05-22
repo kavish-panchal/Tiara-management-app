@@ -86,27 +86,27 @@ const OrderImagePreviewModal = ({
       ctx.fillText(text, x, y);
     };
 
-    // LEFT SIDE - Stacked vertical lines (Party Name + Size breakdown)
+    // LEFT SIDE - Stacked vertical lines (Design #, Order #, and Date)
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
 
-    const leftLines = [
-      partyName || "Party Name",
-      "", // Empty line for spacing
-      ...design.sizeBreakdown.map((sb) => `${sb.size} | ${sb.sets}`),
-    ];
+    const currentDate = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
+    const leftLines = [`#${designNumber}`, orderNumber || "", currentDate];
 
     const leftStartY = (image.height - leftLines.length * lineHeight) / 2;
     leftLines.forEach((line, index) => {
       drawTextWithOutline(line, padding, leftStartY + index * lineHeight);
     });
 
-    // RIGHT SIDE - Stacked vertical lines (Design # and Date)
+    // RIGHT SIDE - Stacked vertical lines (Party Name + Size breakdown)
     ctx.textAlign = "right";
     ctx.textBaseline = "top";
 
-    const currentDate = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
-    const rightLines = [`#${designNumber}`, currentDate];
+    const rightLines = [
+      partyName || "Party Name",
+      "", // Empty line for spacing
+      ...design.sizeBreakdown.map((sb) => `${sb.size} | ${sb.sets}`),
+    ];
 
     const rightStartY = (image.height - rightLines.length * lineHeight) / 2;
     rightLines.forEach((line, index) => {
@@ -203,8 +203,8 @@ const OrderImagePreviewModal = ({
           <p className="text-slate-400 mb-6">
             Review the images below. Each image includes:
             <br />
-            <strong>Left:</strong> Party Name and Size/Sets (vertical) |{" "}
-            <strong>Right:</strong> Design # and Date (vertical)
+            <strong>Left:</strong> Design #, Order #, and Date (vertical) |{" "}
+            <strong>Right:</strong> Party Name and Size/Sets (vertical)
             <br />
             Text is displayed in black. Images are formatted for 4x6 inch
             printing.
