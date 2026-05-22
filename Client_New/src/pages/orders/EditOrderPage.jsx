@@ -9,6 +9,7 @@ const EditOrderPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [order, setOrder] = useState(null); // Store original order with __v
 
   const [formData, setFormData] = useState({
     partyName: "",
@@ -26,15 +27,18 @@ const EditOrderPage = () => {
   const fetchOrder = async () => {
     try {
       const response = await api.get(`/orders/${id}`);
-      const order = response.data;
+      const fetchedOrder = response.data;
+
+      // Store the original order with __v for optimistic locking
+      setOrder(fetchedOrder);
 
       setFormData({
-        partyName: order.partyName,
-        orderDate: new Date(order.orderDate).toISOString().split("T")[0],
-        dueDate: new Date(order.dueDate).toISOString().split("T")[0],
-        specialNotes: order.specialNotes || "",
-        status: order.status,
-        designs: order.designs.map((design) => ({
+        partyName: fetchedOrder.partyName,
+        orderDate: new Date(fetchedOrder.orderDate).toISOString().split("T")[0],
+        dueDate: new Date(fetchedOrder.dueDate).toISOString().split("T")[0],
+        specialNotes: fetchedOrder.specialNotes || "",
+        status: fetchedOrder.status,
+        designs: fetchedOrder.designs.map((design) => ({
           skuCode: design.skuCode,
           sizeBreakdown: design.sizeBreakdown.map((sb) => ({
             size: sb.size,
