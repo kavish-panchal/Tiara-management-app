@@ -270,7 +270,36 @@ const updateProductionStage = async (req, res) => {
       changes.finishDate = { old: stage.finishDate, new: finishDate };
 
     // Update stage
-    if (status) stage.status = status;
+    if (status) {
+      const oldStatus = stage.status;
+      stage.status = status;
+
+      // Auto-set start date when status changes to "in-progress"
+      if (
+        status === "in-progress" &&
+        oldStatus !== "in-progress" &&
+        !stage.startDate
+      ) {
+        const now = new Date();
+        stage.startDate = now;
+        if (!changes.startDate) {
+          changes.startDate = { old: null, new: now };
+        }
+      }
+
+      // Auto-set finish date when status changes to "completed"
+      if (
+        status === "completed" &&
+        oldStatus !== "completed" &&
+        !stage.finishDate
+      ) {
+        const now = new Date();
+        stage.finishDate = now;
+        if (!changes.finishDate) {
+          changes.finishDate = { old: null, new: now };
+        }
+      }
+    }
     if (labour !== undefined) stage.labour = labour;
     if (startDate !== undefined) stage.startDate = startDate;
     if (finishDate !== undefined) stage.finishDate = finishDate;
