@@ -1,7 +1,13 @@
 import { Printer, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
+const OrderImagePreviewModal = ({
+  isOpen,
+  onClose,
+  designs,
+  partyName,
+  onConfirm,
+}) => {
   const [loadedImages, setLoadedImages] = useState({});
   const canvasRefs = useRef({});
 
@@ -44,17 +50,19 @@ const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
     // Draw images with text overlay when images are loaded
     Object.keys(loadedImages).forEach((skuCode) => {
       const design = designs.find((d) => d.skuCode === skuCode);
+      const designIndex = designs.findIndex((d) => d.skuCode === skuCode);
       if (design && canvasRefs.current[skuCode]) {
         drawImageWithText(
           canvasRefs.current[skuCode],
           loadedImages[skuCode],
           design,
+          designIndex + 1, // Design number (1-based)
         );
       }
     });
   }, [loadedImages]);
 
-  const drawImageWithText = (canvas, image, design) => {
+  const drawImageWithText = (canvas, image, design, designNumber) => {
     const ctx = canvas.getContext("2d");
 
     // Set canvas size to match image
@@ -64,26 +72,58 @@ const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
     // Draw the image
     ctx.drawImage(image, 0, 0);
 
-    // Prepare text
-    const sizeText = design.sizeBreakdown
-      .map((sb) => `${sb.size}: ${sb.sets}`)
-      .join(" | ");
-
     // Text styling
-    const fontSize = Math.max(image.height * 0.04, 16);
+    const fontSize = Math.max(image.height * 0.03, 18);
     ctx.font = `bold ${fontSize}px Arial`;
-    ctx.textBaseline = "bottom";
 
-    const padding = 10;
+    const padding = 15;
 
-    // Draw text with black outline for better visibility
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 3;
-    ctx.strokeText(sizeText, padding, image.height - padding);
+    // Helper function to draw text with outline
+    const drawTextWithOutline = (text, x, y, rotation = 0) => {
+      ctx.save();
+      if (rotation !== 0) {
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        x = 0;
+        y = 0;
+      }
 
-    // Draw white text on top
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillText(sizeText, padding, image.height - padding);
+      // Black outline
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 4;
+      ctx.strokeText(text, x, y);
+
+      // White text
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText(text, x, y);
+
+      ctx.restore();
+    };
+
+    // LEFT SIDE - Vertical text (Party Name and Size breakdown)
+    const sizeText = design.sizeBreakdown
+      .map((sb) => `Size ${sb.size}: ${sb.sets} Sets`)
+      .join(" | ");
+    const leftText = `${partyName || "Party Name"} | ${sizeText}`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    drawTextWithOutline(
+      leftText,
+      padding + fontSize / 2,
+      image.height / 2,
+      -Math.PI / 2, // Rotate 90 degrees counter-clockwise
+    );
+
+    // RIGHT SIDE - Vertical text (Design # and Date)
+    const currentDate = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
+    const rightText = `#${designNumber} | ${currentDate}`;
+    drawTextWithOutline(
+      rightText,
+      image.width - padding - fontSize / 2,
+      image.height / 2,
+      Math.PI / 2, // Rotate 90 degrees clockwise
+    );
   };
 
   const handlePrint = () => {
@@ -169,9 +209,13 @@ const OrderImagePreviewModal = ({ isOpen, onClose, designs, onConfirm }) => {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <p className="text-slate-400 mb-6">
-            Review the images below. Size and set information has been added to
-            the bottom-left of each image. You can print these images for your
-            workers.
+            Review the images below. Each image includes:
+            <br />
+            <strong>Left:</strong> Party Name and Size/Sets (vertical) |{" "}
+            <strong>Right:</strong> Design # and Date (vertical)
+            <br />
+            All text is rotated vertically. Images are formatted for 4x6 inch
+            printing.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
