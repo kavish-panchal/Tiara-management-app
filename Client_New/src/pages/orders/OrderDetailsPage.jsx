@@ -3,6 +3,7 @@ import {
     ChevronDown,
     ChevronUp,
     Edit2,
+    Printer,
     Trash2,
     X,
 } from "lucide-react";
@@ -10,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import SkuImage from "../../components/common/SkuImage";
+import OrderImagePreviewModal from "../../components/orders/OrderImagePreviewModal";
 import ProductionTracker from "../../components/production/ProductionTracker";
 import api from "../../utils/api";
 
@@ -23,6 +25,7 @@ const OrderDetailsPage = () => {
   const [collapsedDesigns, setCollapsedDesigns] = useState({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
 
   useEffect(() => {
@@ -315,6 +318,13 @@ const OrderDetailsPage = () => {
             )}
           </div>
           <div className="flex space-x-2">
+            <button
+              onClick={() => setShowPrintModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <Printer size={18} />
+              <span>Print Images</span>
+            </button>
             {order.status !== "cancelled" && (
               <>
                 <button
@@ -555,6 +565,16 @@ const OrderDetailsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Print Images Modal */}
+      <OrderImagePreviewModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        designs={order?.designs || []}
+        partyName={order?.partyName || ""}
+        orderNumber={order?.orderNumber || ""}
+        onConfirm={() => setShowPrintModal(false)}
+      />
     </div>
   );
 };

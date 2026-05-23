@@ -241,25 +241,40 @@ const OrderImagePreviewModal = ({
 
         {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-700">
-          <button
-            onClick={handlePrint}
-            className="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            <Printer size={20} />
-            <span>Print Images</span>
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Confirm & Create Order
-          </button>
+          {orderNumber ? (
+            // Print-only mode (for existing orders)
+            <>
+              <button
+                onClick={onClose}
+                className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={handlePrint}
+                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                <Printer size={20} />
+                <span>Print Images</span>
+              </button>
+            </>
+          ) : (
+            // Preview mode (for new orders)
+            <>
+              <button
+                onClick={onClose}
+                className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Confirm & Create Order
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
