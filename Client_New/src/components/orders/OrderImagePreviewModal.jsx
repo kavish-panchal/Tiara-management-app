@@ -137,8 +137,8 @@ const OrderImagePreviewModal = ({
           index < designs.length - 1 ? "page-break-after: always;" : "";
 
         return `
-          <div style="${pageBreak} width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
-            <img src="${imageData}" style="width: 100%; height: 100%; object-fit: contain;" />
+          <div class="page-container" style="${pageBreak}">
+            <img src="${imageData}" class="print-image" />
           </div>
         `;
       })
@@ -154,17 +154,49 @@ const OrderImagePreviewModal = ({
               padding: 0;
               box-sizing: border-box;
             }
-            body {
-              font-family: Arial, sans-serif;
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            .page-container {
+              width: 4in;
+              height: 6in;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              page-break-after: always;
+              page-break-inside: avoid;
+              overflow: hidden;
+              position: relative;
+            }
+            .print-image {
+              max-width: 100%;
+              max-height: 100%;
+              width: auto;
+              height: auto;
+              object-fit: contain;
             }
             @media print {
               @page {
                 size: 4in 6in;
                 margin: 0;
               }
+              html, body {
+                width: 4in;
+                height: 6in;
+              }
               body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+              }
+              .page-container {
+                page-break-after: always;
+                page-break-inside: avoid;
+              }
+              .page-container:last-child {
+                page-break-after: auto;
               }
             }
           </style>
