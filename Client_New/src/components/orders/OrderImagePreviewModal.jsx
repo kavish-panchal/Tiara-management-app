@@ -7,6 +7,7 @@ const OrderImagePreviewModal = ({
   designs,
   partyName,
   orderNumber,
+  orderSpecialNotes,
   onConfirm,
 }) => {
   const [loadedImages, setLoadedImages] = useState({});
@@ -121,6 +122,28 @@ const OrderImagePreviewModal = ({
         rightStartY + index * lineHeight,
       );
     });
+
+    // BOTTOM - Special Remarks (smaller font)
+    const remarksFontSize = fontSize * 0.5; // Half the size of main text
+    ctx.font = `bold ${remarksFontSize}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+
+    const remarksBottomPadding = 10;
+    let bottomY = image.height - remarksBottomPadding;
+
+    // Design Special Remarks (if exists)
+    if (design.specialRemarks && design.specialRemarks.trim()) {
+      const designRemarks = `# ${design.specialRemarks.trim()} #`;
+      drawTextWithOutline(designRemarks, image.width / 2, bottomY);
+      bottomY -= remarksFontSize * 1.3; // Move up for next line
+    }
+
+    // Order Special Notes (if exists)
+    if (orderSpecialNotes && orderSpecialNotes.trim()) {
+      const orderRemarks = `* ${orderSpecialNotes.trim()} *`;
+      drawTextWithOutline(orderRemarks, image.width / 2, bottomY);
+    }
   };
 
   const handlePrint = () => {
