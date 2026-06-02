@@ -67,6 +67,17 @@ const OrdersPage = () => {
     fetchOrders(false); // Manual refresh without full loading spinner
   };
 
+  const calculateTotalSets = (order) => {
+    if (!order?.designs) return 0;
+
+    return order.designs.reduce((total, design) => {
+      const designTotal = design.sizeBreakdown.reduce((sum, sb) => {
+        return sum + (parseInt(sb.sets) || 0);
+      }, 0);
+      return total + designTotal;
+    }, 0);
+  };
+
   const filteredOrders = orders.filter((order) => {
     const searchLower = searchTerm.toLowerCase();
 
@@ -222,7 +233,7 @@ const OrdersPage = () => {
                 Due Date
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                Designs
+                Designs / Sets
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
                 Status
@@ -258,7 +269,15 @@ const OrdersPage = () => {
                     {formatDate(order.dueDate)}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-300">
-                    {order.designs?.length || 0}
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-white">
+                        {order.designs?.length || 0}
+                      </span>
+                      <span className="text-slate-500">/</span>
+                      <span className="text-blue-400 font-medium">
+                        {calculateTotalSets(order)}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
