@@ -16,7 +16,6 @@ const EditOrderPage = () => {
     orderDate: "",
     dueDate: "",
     specialNotes: "",
-    status: "pending",
     designs: [],
   });
 
@@ -43,7 +42,6 @@ const EditOrderPage = () => {
           ? new Date(fetchedOrder.orderDelivered).toISOString().split("T")[0]
           : "",
         specialNotes: fetchedOrder.specialNotes || "",
-        status: fetchedOrder.status,
         designs: fetchedOrder.designs.map((design) => ({
           _id: design._id, // Preserve design ID
           skuCode: design.skuCode,
@@ -245,24 +243,6 @@ const EditOrderPage = () => {
                 }
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Status *
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-                required
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="pending">Pending</option>
-                <option value="in-production">In Production</option>
-                <option value="completed">Completed</option>
-                <option value="delivered">Delivered</option>
-              </select>
             </div>
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-slate-300 mb-2">
