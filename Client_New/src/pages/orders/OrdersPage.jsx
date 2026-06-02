@@ -68,9 +68,36 @@ const OrdersPage = () => {
   };
 
   const filteredOrders = orders.filter((order) => {
-    const matchesSearch = order.partyName
+    const searchLower = searchTerm.toLowerCase();
+
+    // Search by party name
+    const matchesPartyName = order.partyName
       .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      .includes(searchLower);
+
+    // Search by order number (e.g., "260001")
+    const matchesOrderNumber = order.orderNumber
+      ?.toString()
+      .toLowerCase()
+      .includes(searchLower);
+
+    // Search by order date (formatted as "DD MMM YYYY")
+    const orderDateFormatted = new Date(order.orderDate)
+      .toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      .toLowerCase();
+    const matchesOrderDate = orderDateFormatted.includes(searchLower);
+
+    // Search by design SKU codes
+    const matchesSKU = order.designs?.some((design) =>
+      design.skuCode.toLowerCase().includes(searchLower),
+    );
+
+    const matchesSearch =
+      matchesPartyName || matchesOrderNumber || matchesOrderDate || matchesSKU;
     const matchesStatus =
       statusFilter === "all" || order.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -157,7 +184,7 @@ const OrdersPage = () => {
             />
             <input
               type="text"
-              placeholder="Search by party name..."
+              placeholder="Search by party name, order #, date, or SKU code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"

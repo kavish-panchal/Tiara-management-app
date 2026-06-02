@@ -74,8 +74,8 @@ const OrderImagePreviewModal = ({
     // Draw the image
     ctx.drawImage(image, 0, 0);
 
-    // Text styling - doubled from original size (16px base -> 32px base, then + 6px = 38px, doubled = 76px)
-    const fontSize = (Math.max(image.height * 0.025, 16) + 6) * 2;
+    // Text styling - reduced by 5px from doubled size (16px base -> 32px base, then + 6px = 38px, doubled = 76px, minus 5px = 71px)
+    const fontSize = (Math.max(image.height * 0.025, 16) + 6) * 2 - 5;
     ctx.font = `bold ${fontSize}px Arial`;
 
     const padding = 15;
