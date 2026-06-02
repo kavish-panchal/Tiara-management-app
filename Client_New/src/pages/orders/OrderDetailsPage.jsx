@@ -4,6 +4,7 @@ import {
     ChevronUp,
     Edit2,
     Printer,
+    RotateCcw,
     Trash2,
     X,
 } from "lucide-react";
@@ -13,11 +14,14 @@ import ConfirmDialog from "../../components/common/ConfirmDialog";
 import SkuImage from "../../components/common/SkuImage";
 import OrderImagePreviewModal from "../../components/orders/OrderImagePreviewModal";
 import ProductionTracker from "../../components/production/ProductionTracker";
+import useAuthStore from "../../stores/authStore";
 import api from "../../utils/api";
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isOwner = user?.role === "owner";
   const [order, setOrder] = useState(null);
   const [productionStages, setProductionStages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -257,6 +261,25 @@ const OrderDetailsPage = () => {
     }
   };
 
+  const handleUncancelOrder = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to restore this cancelled order? The order will be reactivated.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api.put(`/orders/${id}/uncancel`);
+      // Refresh order data
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to restore order");
+      console.error(err);
+    }
+  };
+
   const handlePrintImages = async () => {
     setShowPrintModal(true);
 
@@ -400,6 +423,15 @@ const OrderDetailsPage = () => {
                   <span>Cancel Order</span>
                 </button>
               </>
+            )}
+            {order.status === "cancelled" && isOwner && (
+              <button
+                onClick={handleUncancelOrder}
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+              >
+                <RotateCcw size={18} />
+                <span>Restore Order</span>
+              </button>
             )}
             <button
               onClick={handleDeleteClick}

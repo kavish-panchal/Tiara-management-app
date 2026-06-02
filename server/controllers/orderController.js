@@ -523,6 +523,98 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+// @desc    Un-cancel order (restore cancelled order)
+// @route   PUT /api/orders/:id/uncancel
+// @access  Private (Owner only)
+const uncancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Check if order is cancelled
+    if (order.status !== "cancelled") {
+      return res.status(400).json({ message: "Order is not cancelled" });
+    }
+
+    const oldStatus = order.status;
+    const oldCancelledAt = order.cancelledAt;
+    const oldCancellationReason = order.cancellationReason;
+
+    // Determine new status based on production progress
+    const anyInProgress = order.designs.some((design) => {
+      if (
+        !design.productionProgress ||
+        design.productionProgress.length === 0
+      ) {
+        return false;
+      }
+      return design.productionProgress.some(
+        (stage) =>
+          stage.status === "in-progress" || stage.status === "completed",
+      );
+    });
+
+    // Check if all SKUs are completed
+    const allSKUsCompleted = order.designs.every((design) => {
+      if (
+        !design.productionProgress ||
+        design.productionProgress.length === 0
+      ) {
+        return false;
+      }
+
+      const startedStages = design.productionProgress.filter(
+        (stage) => stage.status !== "not-started",
+      );
+
+      if (startedStages.length === 0) {
+        return false;
+      }
+
+      return startedStages.every((stage) => stage.status === "completed");
+    });
+
+    // Set status based on progress
+    if (allSKUsCompleted) {
+      order.status = "completed";
+    } else if (anyInProgress) {
+      order.status = "in-production";
+    } else {
+      order.status = "pending";
+    }
+
+    // Clear cancellation fields
+    order.cancelledAt = undefined;
+    order.cancellationReason = undefined;
+
+    await order.save();
+
+    // Create audit log
+    if (req.user) {
+      await createAuditLog({
+        user: req.user,
+        action: "UNCANCEL",
+        resourceType: "Order",
+        resourceId: order._id.toString(),
+        description: `Restored cancelled order #${order.orderNumber} for ${order.partyName}`,
+        changes: {
+          status: { old: oldStatus, new: order.status },
+          cancelledAt: { old: oldCancelledAt, new: null },
+          cancellationReason: { old: oldCancellationReason, new: null },
+        },
+        req,
+      });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Mark order images as printed
 // @route   POST /api/orders/:id/mark-printed
 // @access  Private
@@ -570,6 +662,7 @@ module.exports = {
   updateOrder,
   deleteOrder,
   cancelOrder,
+  uncancelOrder,
   updateProductionStage,
   markOrderAsPrinted,
 };
