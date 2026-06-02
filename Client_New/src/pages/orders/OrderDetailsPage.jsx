@@ -321,6 +321,14 @@ const OrderDetailsPage = () => {
               <h1 className="text-3xl font-bold text-white">
                 Order #{order.orderNumber}
               </h1>
+              {/* Status Badge */}
+              {order.status !== "cancelled" && (
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(order.status)}`}
+                >
+                  {order.status.replace("-", " ").toUpperCase()}
+                </span>
+              )}
               {order.status === "cancelled" && (
                 <span className="px-3 py-1 bg-red-600/20 border border-red-600 text-red-400 text-sm font-bold rounded-full">
                   🚫 CANCELLED
@@ -381,7 +389,7 @@ const OrderDetailsPage = () => {
       </div>
 
       {/* Order Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="bg-slate-800 rounded-lg p-6">
           <p className="text-slate-400 text-sm mb-1">Order Date</p>
           <p className="text-white font-semibold">
@@ -395,24 +403,21 @@ const OrderDetailsPage = () => {
           </p>
         </div>
         <div className="bg-slate-800 rounded-lg p-6">
-          <p className="text-slate-400 text-sm mb-1">Order Completed</p>
-          <p className="text-white font-semibold">
-            {order.orderCompleted ? formatDate(order.orderCompleted) : "-"}
-          </p>
-        </div>
-        <div className="bg-slate-800 rounded-lg p-6">
-          <p className="text-slate-400 text-sm mb-1">Order Delivered</p>
-          <p className="text-white font-semibold">
-            {order.orderDelivered ? formatDate(order.orderDelivered) : "-"}
-          </p>
-        </div>
-        <div className="bg-slate-800 rounded-lg p-6">
-          <p className="text-slate-400 text-sm mb-1">Status</p>
-          <span
-            className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}
-          >
-            {order.status.replace("-", " ").toUpperCase()}
-          </span>
+          <p className="text-slate-400 text-sm mb-2">Completion & Delivery</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-xs">Completed:</span>
+              <span className="text-white text-sm font-medium">
+                {order.orderCompleted ? formatDate(order.orderCompleted) : "-"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-xs">Delivered:</span>
+              <span className="text-white text-sm font-medium">
+                {order.orderDelivered ? formatDate(order.orderDelivered) : "-"}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-6">
           <p className="text-slate-400 text-sm mb-1">Total Designs</p>
