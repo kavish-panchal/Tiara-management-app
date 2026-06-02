@@ -381,6 +381,7 @@ const updateProductionStage = async (req, res) => {
     });
 
     // Check if all SKUs are completed and auto-update order status
+    // A design is completed when all its stages that have any progress are completed
     const allSKUsCompleted = order.designs.every((design) => {
       // Check if this design has production progress
       if (
@@ -389,10 +390,20 @@ const updateProductionStage = async (req, res) => {
       ) {
         return false;
       }
-      // Check if all stages in this design are completed
-      return design.productionProgress.every(
-        (stage) => stage.status === "completed",
+
+      // Filter out stages that haven't been started (not-started)
+      // Only check stages that have been worked on
+      const startedStages = design.productionProgress.filter(
+        (stage) => stage.status !== "not-started",
       );
+
+      // If no stages have been started, design is not completed
+      if (startedStages.length === 0) {
+        return false;
+      }
+
+      // Check if all started stages are completed
+      return startedStages.every((stage) => stage.status === "completed");
     });
 
     // Auto-update order status based on production progress

@@ -140,23 +140,36 @@ const OrderDetailsPage = () => {
       };
     }
 
-    const allCompleted = productionProgress.every(
-      (stage) => stage.status === "completed",
-    );
-    const anyInProgress = productionProgress.some(
-      (stage) => stage.status === "in-progress",
-    );
-    const anyStarted = productionProgress.some(
+    // Filter stages that have been started
+    const startedStages = productionProgress.filter(
       (stage) => stage.status !== "not-started",
     );
 
-    if (allCompleted) {
+    // If no stages have been started
+    if (startedStages.length === 0) {
+      return {
+        status: "not-started",
+        label: "Not Started",
+        color: "bg-slate-500/10 text-slate-500 border-slate-500",
+      };
+    }
+
+    // Check if all started stages are completed
+    const allStartedCompleted = startedStages.every(
+      (stage) => stage.status === "completed",
+    );
+
+    const anyInProgress = startedStages.some(
+      (stage) => stage.status === "in-progress",
+    );
+
+    if (allStartedCompleted) {
       return {
         status: "completed",
         label: "Completed",
         color: "bg-green-500/10 text-green-500 border-green-500",
       };
-    } else if (anyInProgress || anyStarted) {
+    } else if (anyInProgress) {
       return {
         status: "in-progress",
         label: "In Progress",
@@ -164,9 +177,9 @@ const OrderDetailsPage = () => {
       };
     } else {
       return {
-        status: "not-started",
-        label: "Not Started",
-        color: "bg-slate-500/10 text-slate-500 border-slate-500",
+        status: "in-progress",
+        label: "In Progress",
+        color: "bg-blue-500/10 text-blue-500 border-blue-500",
       };
     }
   };
@@ -176,7 +189,15 @@ const OrderDetailsPage = () => {
       return null;
     }
 
-    // First, check if there's any stage that's "in-progress"
+    // Check if all stages are completed first
+    const allCompleted = productionProgress.every(
+      (stage) => stage.status === "completed",
+    );
+    if (allCompleted) {
+      return null; // All done, no current stage
+    }
+
+    // Check if there's any stage that's "in-progress"
     const inProgressStage = productionProgress.find(
       (stage) => stage.status === "in-progress",
     );
@@ -184,7 +205,7 @@ const OrderDetailsPage = () => {
       return inProgressStage.stageName;
     }
 
-    // If no in-progress stage, find the last completed stage and return the next one
+    // If no in-progress stage, find the first not-started stage after completed ones
     let lastCompletedIndex = -1;
     for (let i = productionProgress.length - 1; i >= 0; i--) {
       if (productionProgress[i].status === "completed") {
@@ -199,14 +220,6 @@ const OrderDetailsPage = () => {
       lastCompletedIndex < productionProgress.length - 1
     ) {
       return productionProgress[lastCompletedIndex + 1].stageName;
-    }
-
-    // If all stages are completed, return null
-    const allCompleted = productionProgress.every(
-      (stage) => stage.status === "completed",
-    );
-    if (allCompleted) {
-      return null;
     }
 
     // Otherwise, return the first stage (nothing has started yet)
@@ -278,6 +291,17 @@ const OrderDetailsPage = () => {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const calculateTotalSets = () => {
+    if (!order?.designs) return 0;
+
+    return order.designs.reduce((total, design) => {
+      const designTotal = design.sizeBreakdown.reduce((sum, sb) => {
+        return sum + (parseInt(sb.sets) || 0);
+      }, 0);
+      return total + designTotal;
+    }, 0);
   };
 
   if (loading) {
@@ -420,10 +444,21 @@ const OrderDetailsPage = () => {
           </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-6">
-          <p className="text-slate-400 text-sm mb-1">Total Designs</p>
-          <p className="text-white font-semibold text-2xl">
-            {order.designs?.length || 0}
-          </p>
+          <p className="text-slate-400 text-sm mb-2">Designs & Sets</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-xs">Designs:</span>
+              <span className="text-white text-xl font-bold">
+                {order.designs?.length || 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-xs">Total Sets:</span>
+              <span className="text-white text-xl font-bold">
+                {calculateTotalSets()}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="bg-slate-800 rounded-lg p-6">
           <p className="text-slate-400 text-sm mb-1">Images Printed</p>
