@@ -234,11 +234,21 @@ const OrdersPage = () => {
                     {order.designs?.length || 0}
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}
-                    >
-                      {order.status.replace("-", " ").toUpperCase()}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}
+                      >
+                        {order.status.replace("-", " ").toUpperCase()}
+                      </span>
+                      {order.imagesPrinted && (
+                        <span
+                          className="text-green-400 text-lg"
+                          title="Images printed"
+                        >
+                          🖨️
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">

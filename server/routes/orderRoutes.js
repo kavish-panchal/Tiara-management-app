@@ -8,6 +8,7 @@ const {
   deleteOrder,
   cancelOrder,
   updateProductionStage,
+  markOrderAsPrinted,
 } = require("../controllers/orderController");
 const { protect } = require("../middleware/auth");
 
@@ -21,6 +22,9 @@ router.route("/:id").get(getOrderById).put(updateOrder).delete(deleteOrder);
 
 // Cancel order route
 router.put("/:id/cancel", cancelOrder);
+
+// Mark as printed route
+router.post("/:id/mark-printed", markOrderAsPrinted);
 
 // Production stage update route
 router.put(

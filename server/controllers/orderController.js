@@ -110,8 +110,16 @@ const updateOrder = async (req, res) => {
       });
     }
 
-    const { partyName, orderDate, dueDate, specialNotes, status, designs } =
-      req.body;
+    const {
+      partyName,
+      orderDate,
+      dueDate,
+      orderCompleted,
+      orderDelivered,
+      specialNotes,
+      status,
+      designs,
+    } = req.body;
 
     // Track changes for audit log
     const changes = {};
@@ -121,12 +129,48 @@ const updateOrder = async (req, res) => {
       changes.orderDate = { old: order.orderDate, new: orderDate };
     if (dueDate && dueDate !== order.dueDate)
       changes.dueDate = { old: order.dueDate, new: dueDate };
+    if (orderCompleted !== undefined) {
+      const newCompleted = orderCompleted ? new Date(orderCompleted) : null;
+      if (
+        (newCompleted && !order.orderCompleted) ||
+        (!newCompleted && order.orderCompleted) ||
+        (newCompleted &&
+          order.orderCompleted &&
+          newCompleted.getTime() !== order.orderCompleted.getTime())
+      ) {
+        changes.orderCompleted = {
+          old: order.orderCompleted,
+          new: newCompleted,
+        };
+      }
+    }
+    if (orderDelivered !== undefined) {
+      const newDelivered = orderDelivered ? new Date(orderDelivered) : null;
+      if (
+        (newDelivered && !order.orderDelivered) ||
+        (!newDelivered && order.orderDelivered) ||
+        (newDelivered &&
+          order.orderDelivered &&
+          newDelivered.getTime() !== order.orderDelivered.getTime())
+      ) {
+        changes.orderDelivered = {
+          old: order.orderDelivered,
+          new: newDelivered,
+        };
+      }
+    }
     if (status && status !== order.status)
       changes.status = { old: order.status, new: status };
 
     order.partyName = partyName || order.partyName;
     order.orderDate = orderDate || order.orderDate;
     order.dueDate = dueDate || order.dueDate;
+    if (orderCompleted !== undefined) {
+      order.orderCompleted = orderCompleted ? new Date(orderCompleted) : null;
+    }
+    if (orderDelivered !== undefined) {
+      order.orderDelivered = orderDelivered ? new Date(orderDelivered) : null;
+    }
     order.specialNotes =
       specialNotes !== undefined ? specialNotes : order.specialNotes;
     order.status = status || order.status;
@@ -157,6 +201,24 @@ const updateOrder = async (req, res) => {
         changeDescriptions.push(
           `status from "${changes.status.old}" to "${changes.status.new}"`,
         );
+      }
+      if (changes.orderCompleted) {
+        const oldDate = changes.orderCompleted.old
+          ? new Date(changes.orderCompleted.old).toLocaleDateString()
+          : "not set";
+        const newDate = changes.orderCompleted.new
+          ? new Date(changes.orderCompleted.new).toLocaleDateString()
+          : "cleared";
+        changeDescriptions.push(`completed date from ${oldDate} to ${newDate}`);
+      }
+      if (changes.orderDelivered) {
+        const oldDate = changes.orderDelivered.old
+          ? new Date(changes.orderDelivered.old).toLocaleDateString()
+          : "not set";
+        const newDate = changes.orderDelivered.new
+          ? new Date(changes.orderDelivered.new).toLocaleDateString()
+          : "cleared";
+        changeDescriptions.push(`delivered date from ${oldDate} to ${newDate}`);
       }
 
       const description =
@@ -450,6 +512,46 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+// @desc    Mark order images as printed
+// @route   POST /api/orders/:id/mark-printed
+// @access  Private
+const markOrderAsPrinted = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Update print status
+    order.imagesPrinted = true;
+    order.imagesPrintedAt = new Date();
+    order.imagesPrintedBy = req.user._id;
+
+    await order.save();
+
+    // Create audit log
+    if (req.user) {
+      await createAuditLog({
+        user: req.user,
+        action: "UPDATE",
+        resourceType: "Order",
+        resourceId: order._id.toString(),
+        description: `Marked images as printed for order #${order.orderNumber} (${order.partyName})`,
+        changes: {
+          imagesPrinted: { old: false, new: true },
+          imagesPrintedAt: { old: null, new: order.imagesPrintedAt },
+        },
+        req,
+      });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getOrders,
   getOrderById,
@@ -458,4 +560,5 @@ module.exports = {
   deleteOrder,
   cancelOrder,
   updateProductionStage,
+  markOrderAsPrinted,
 };

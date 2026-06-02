@@ -102,6 +102,19 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    imagesPrinted: {
+      type: Boolean,
+      default: false,
+    },
+    imagesPrintedAt: {
+      type: Date,
+      default: null,
+    },
+    imagesPrintedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     designs: [designSchema],
   },
   {

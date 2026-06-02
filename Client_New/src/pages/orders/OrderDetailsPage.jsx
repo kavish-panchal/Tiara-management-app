@@ -27,6 +27,7 @@ const OrderDetailsPage = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
+  const [markingPrinted, setMarkingPrinted] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -243,6 +244,25 @@ const OrderDetailsPage = () => {
     }
   };
 
+  const handlePrintImages = async () => {
+    setShowPrintModal(true);
+
+    // Mark as printed in database
+    if (!order.imagesPrinted) {
+      try {
+        setMarkingPrinted(true);
+        await api.post(`/orders/${id}/mark-printed`);
+        // Refresh order data to show updated print status
+        await fetchData();
+      } catch (err) {
+        console.error("Failed to mark as printed:", err);
+        // Don't show error to user, just log it
+      } finally {
+        setMarkingPrinted(false);
+      }
+    }
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500",
@@ -306,6 +326,11 @@ const OrderDetailsPage = () => {
                   🚫 CANCELLED
                 </span>
               )}
+              {order.imagesPrinted && (
+                <span className="px-3 py-1 bg-green-600/20 border border-green-600 text-green-400 text-sm font-bold rounded-full">
+                  🖨️ PRINTED
+                </span>
+              )}
             </div>
             <p className="text-xl font-semibold text-slate-300">
               Party Name: {order.partyName}
@@ -319,11 +344,12 @@ const OrderDetailsPage = () => {
           </div>
           <div className="flex space-x-2">
             <button
-              onClick={() => setShowPrintModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+              onClick={handlePrintImages}
+              disabled={markingPrinted}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
             >
               <Printer size={18} />
-              <span>Print Images</span>
+              <span>{markingPrinted ? "Loading..." : "Print Images"}</span>
             </button>
             {order.status !== "cancelled" && (
               <>
@@ -393,6 +419,30 @@ const OrderDetailsPage = () => {
           <p className="text-white font-semibold text-2xl">
             {order.designs?.length || 0}
           </p>
+        </div>
+        <div className="bg-slate-800 rounded-lg p-6">
+          <p className="text-slate-400 text-sm mb-1">Images Printed</p>
+          {order.imagesPrinted ? (
+            <div>
+              <p className="text-green-400 font-semibold flex items-center space-x-1">
+                <span>✅</span>
+                <span>Yes</span>
+              </p>
+              {order.imagesPrintedAt && (
+                <p className="text-slate-500 text-xs mt-1">
+                  {new Date(order.imagesPrintedAt).toLocaleString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-slate-500 font-semibold">Not Printed</p>
+          )}
         </div>
       </div>
 

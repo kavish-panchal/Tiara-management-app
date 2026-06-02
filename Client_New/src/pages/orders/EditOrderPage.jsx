@@ -45,12 +45,14 @@ const EditOrderPage = () => {
         specialNotes: fetchedOrder.specialNotes || "",
         status: fetchedOrder.status,
         designs: fetchedOrder.designs.map((design) => ({
+          _id: design._id, // Preserve design ID
           skuCode: design.skuCode,
           specialRemarks: design.specialRemarks || "",
           sizeBreakdown: design.sizeBreakdown.map((sb) => ({
             size: sb.size,
             sets: sb.sets,
           })),
+          productionProgress: design.productionProgress || [], // Preserve production progress
         })),
       });
     } catch (err) {
