@@ -389,6 +389,7 @@ const CreateOrderPage = () => {
         onClose={() => setShowPreviewModal(false)}
         designs={formData.designs}
         partyName={formData.partyName}
+        orderDate={formData.orderDate}
         orderSpecialNotes={formData.specialNotes}
         onConfirm={handleConfirmOrder}
       />

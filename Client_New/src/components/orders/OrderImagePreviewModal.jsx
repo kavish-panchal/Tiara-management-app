@@ -7,6 +7,7 @@ const OrderImagePreviewModal = ({
   designs,
   partyName,
   orderNumber,
+  orderDate,
   orderSpecialNotes,
   onConfirm,
 }) => {
@@ -92,11 +93,14 @@ const OrderImagePreviewModal = ({
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
 
-    const currentDate = new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
+    // Use actual order date if provided, otherwise use today's date
+    const formattedDate = orderDate
+      ? new Date(orderDate).toLocaleDateString("en-GB")
+      : new Date().toLocaleDateString("en-GB"); // DD/MM/YYYY format
     const leftLines = [
       `#${designNumber}`,
       ...(orderNumber ? [orderNumber] : []), // Only include if orderNumber exists
-      currentDate,
+      formattedDate,
     ];
 
     const leftStartY = (image.height - leftLines.length * lineHeight) / 2;

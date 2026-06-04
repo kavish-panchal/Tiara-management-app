@@ -695,6 +695,7 @@ const OrderDetailsPage = () => {
         designs={order?.designs || []}
         partyName={order?.partyName || ""}
         orderNumber={order?.orderNumber || ""}
+        orderDate={order?.orderDate || null}
         orderSpecialNotes={order?.specialNotes || ""}
         onConfirm={() => setShowPrintModal(false)}
       />
