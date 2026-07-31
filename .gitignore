@@ -47,3 +47,6 @@ coverage/
 # Misc
 *.bak
 *.backup
+
+# AWS Image Manager - User deployment package (keep local, don't commit)
+AWS Image Manager/
