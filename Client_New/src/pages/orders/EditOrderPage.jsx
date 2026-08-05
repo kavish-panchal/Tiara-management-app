@@ -41,6 +41,7 @@ const EditOrderPage = () => {
         orderDelivered: fetchedOrder.orderDelivered
           ? new Date(fetchedOrder.orderDelivered).toISOString().split("T")[0]
           : "",
+        priority: fetchedOrder.priority || "normal",
         specialNotes: fetchedOrder.specialNotes || "",
         designs: fetchedOrder.designs.map((design) => ({
           _id: design._id, // Preserve design ID
@@ -217,6 +218,22 @@ const EditOrderPage = () => {
                 required
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Priority
+              </label>
+              <select
+                value={formData.priority}
+                onChange={(e) =>
+                  setFormData({ ...formData, priority: e.target.value })
+                }
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="normal">Normal</option>
+                <option value="high">High Priority</option>
+                <option value="urgent">Urgent</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">

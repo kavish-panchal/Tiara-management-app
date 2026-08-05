@@ -2,15 +2,19 @@ import {
     FileText,
     LayoutDashboard,
     LogOut,
+    Moon,
     Package,
     Settings,
     ShoppingCart,
+    Sun,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext";
 import useAuthStore from "../../stores/authStore";
 
 const Sidebar = () => {
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -26,15 +30,19 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 bg-slate-800 min-h-screen flex flex-col">
+    <div className="w-64 bg-slate-800 dark:bg-slate-800 light:bg-white min-h-screen flex flex-col transition-colors border-r dark:border-slate-700 light:border-gray-200">
       {/* Logo/Brand */}
-      <div className="p-6 border-b border-slate-700">
-        <h1 className="text-xl font-bold text-white">Inventory App</h1>
-        <p className="text-sm text-slate-400 mt-1">Bangle Manufacturing</p>
+      <div className="p-6 border-b dark:border-slate-700 light:border-gray-200">
+        <h1 className="text-xl font-bold dark:text-white light:text-gray-900">
+          Inventory App
+        </h1>
+        <p className="text-sm dark:text-slate-400 light:text-gray-600 mt-1">
+          Bangle Manufacturing
+        </p>
       </div>
 
       {/* User Info */}
-      <div className="p-4 border-b border-slate-700">
+      <div className="p-4 border-b dark:border-slate-700 light:border-gray-200">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
             <span className="text-white font-semibold">
@@ -42,8 +50,12 @@ const Sidebar = () => {
             </span>
           </div>
           <div>
-            <p className="text-white font-medium text-sm">{user?.name}</p>
-            <p className="text-slate-400 text-xs capitalize">{user?.role}</p>
+            <p className="dark:text-white light:text-gray-900 font-medium text-sm">
+              {user?.name}
+            </p>
+            <p className="dark:text-slate-400 light:text-gray-600 text-xs capitalize">
+              {user?.role}
+            </p>
           </div>
         </div>
       </div>
@@ -59,7 +71,7 @@ const Sidebar = () => {
                   `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? "bg-blue-600 text-white"
-                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                      : "dark:text-slate-300 light:text-gray-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 hover:text-blue-600"
                   }`
                 }
               >
@@ -71,11 +83,26 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-slate-700">
+      {/* Theme Toggle & Logout */}
+      <div className="p-4 border-t dark:border-slate-700 light:border-gray-200 space-y-2">
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="flex items-center space-x-3 px-4 py-3 rounded-lg dark:text-slate-300 light:text-gray-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 hover:text-blue-600 transition-colors w-full"
+          title={
+            theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"
+          }
+        >
+          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          <span className="font-medium">
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </span>
+        </button>
+
+        {/* Logout */}
         <button
           onClick={handleLogout}
-          className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors w-full"
+          className="flex items-center space-x-3 px-4 py-3 rounded-lg dark:text-slate-300 light:text-gray-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 dark:hover:text-white light:hover:text-red-600 transition-colors w-full"
         >
           <LogOut size={20} />
           <span className="font-medium">Logout</span>

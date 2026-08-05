@@ -308,6 +308,23 @@ const OrderDetailsPage = () => {
     return colors[status] || colors.pending;
   };
 
+  const getPriorityConfig = (priority) => {
+    const configs = {
+      urgent: {
+        color: "bg-red-500/20 border-red-500 text-red-400",
+        icon: "🔴",
+        label: "URGENT",
+      },
+      high: {
+        color: "bg-orange-500/20 border-orange-500 text-orange-400",
+        icon: "🟡",
+        label: "HIGH PRIORITY",
+      },
+      normal: null, // Don't show badge for normal priority
+    };
+    return configs[priority] || null;
+  };
+
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -356,11 +373,11 @@ const OrderDetailsPage = () => {
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => navigate("/orders")}
+          onClick={() => navigate(-1)}
           className="flex items-center space-x-2 text-slate-400 hover:text-white mb-4 transition-colors"
         >
           <ArrowLeft size={20} />
-          <span>Back to Orders</span>
+          <span>Back</span>
         </button>
         <div className="flex justify-between items-start">
           <div>
@@ -384,6 +401,15 @@ const OrderDetailsPage = () => {
               {order.imagesPrinted && (
                 <span className="px-3 py-1 bg-green-600/20 border border-green-600 text-green-400 text-sm font-bold rounded-full">
                   🖨️ PRINTED
+                </span>
+              )}
+              {/* Priority Badge */}
+              {getPriorityConfig(order.priority) && (
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold border ${getPriorityConfig(order.priority).color}`}
+                >
+                  {getPriorityConfig(order.priority).icon}{" "}
+                  {getPriorityConfig(order.priority).label}
                 </span>
               )}
             </div>

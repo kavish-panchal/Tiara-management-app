@@ -10,6 +10,7 @@ const OrdersPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
 
@@ -111,7 +112,9 @@ const OrdersPage = () => {
       matchesPartyName || matchesOrderNumber || matchesOrderDate || matchesSKU;
     const matchesStatus =
       statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesPriority =
+      priorityFilter === "all" || order.priority === priorityFilter;
+    return matchesSearch && matchesStatus && matchesPriority;
   });
 
   const getStatusColor = (status) => {
@@ -122,6 +125,15 @@ const OrdersPage = () => {
       cancelled: "bg-red-500/10 text-red-500 border-red-500",
     };
     return colors[status] || colors.pending;
+  };
+
+  const getPriorityBadge = (priority) => {
+    const badges = {
+      urgent: { icon: "🔴", color: "text-red-500", label: "URGENT" },
+      high: { icon: "🟡", color: "text-orange-500", label: "HIGH" },
+      normal: null,
+    };
+    return badges[priority] || null;
   };
 
   const formatDate = (date) => {
@@ -212,6 +224,16 @@ const OrdersPage = () => {
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Priorities</option>
+            <option value="urgent">🔴 Urgent</option>
+            <option value="high">🟡 High Priority</option>
+            <option value="normal">Normal</option>
+          </select>
         </div>
       </div>
 
@@ -254,68 +276,87 @@ const OrdersPage = () => {
                 </td>
               </tr>
             ) : (
-              filteredOrders.map((order) => (
-                <tr key={order._id} className="hover:bg-slate-750">
-                  <td className="px-6 py-4 text-sm text-white font-mono">
-                    #{order.orderNumber}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-white font-medium">
-                    {order.partyName}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">
-                    {formatDate(order.orderDate)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">
-                    {formatDate(order.dueDate)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-semibold text-white">
-                        {order.designs?.length || 0}
-                      </span>
-                      <span className="text-slate-500">/</span>
-                      <span className="text-blue-400 font-medium">
-                        {calculateTotalSets(order)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}
-                      >
-                        {order.status.replace("-", " ").toUpperCase()}
-                      </span>
-                      {order.imagesPrinted && (
-                        <span
-                          className="text-green-400 text-lg"
-                          title="Images printed"
-                        >
-                          🖨️
+              filteredOrders.map((order) => {
+                const priorityBadge = getPriorityBadge(order.priority);
+                const rowClass =
+                  order.priority === "urgent"
+                    ? "hover:bg-slate-750 bg-red-900/10"
+                    : order.priority === "high"
+                      ? "hover:bg-slate-750 bg-orange-900/10"
+                      : "hover:bg-slate-750";
+                return (
+                  <tr key={order._id} className={rowClass}>
+                    <td className="px-6 py-4 text-sm text-white font-mono">
+                      <div className="flex items-center space-x-2">
+                        <span>#{order.orderNumber}</span>
+                        {priorityBadge && (
+                          <span
+                            className={priorityBadge.color}
+                            title={priorityBadge.label}
+                          >
+                            {priorityBadge.icon}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-white font-medium">
+                      {order.partyName}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-300">
+                      {formatDate(order.orderDate)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-300">
+                      {formatDate(order.dueDate)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-300">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold text-white">
+                          {order.designs?.length || 0}
                         </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <Link
-                        to={`/orders/${order._id}`}
-                        className="text-blue-400 hover:text-blue-300 flex items-center space-x-1"
-                      >
-                        <Eye size={16} />
-                        <span className="text-sm">View</span>
-                      </Link>
-                      <button
-                        onClick={() => handleDeleteClick(order)}
-                        className="text-red-400 hover:text-red-300 transition-colors"
-                        title="Delete order"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        <span className="text-slate-500">/</span>
+                        <span className="text-blue-400 font-medium">
+                          {calculateTotalSets(order)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}
+                        >
+                          {order.status.replace("-", " ").toUpperCase()}
+                        </span>
+                        {order.imagesPrinted && (
+                          <span
+                            className="text-green-400 text-lg"
+                            title="Images printed"
+                          >
+                            🖨️
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <Link
+                          to={`/orders/${order._id}`}
+                          className="text-blue-400 hover:text-blue-300 flex items-center space-x-1"
+                        >
+                          <Eye size={16} />
+                          <span className="text-sm">View</span>
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteClick(order)}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                          title="Delete order"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

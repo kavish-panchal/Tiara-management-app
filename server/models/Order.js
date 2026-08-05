@@ -94,6 +94,11 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "in-production", "completed", "cancelled"],
       default: "pending",
     },
+    priority: {
+      type: String,
+      enum: ["normal", "high", "urgent"],
+      default: "normal",
+    },
     cancelledAt: {
       type: Date,
       default: null,
